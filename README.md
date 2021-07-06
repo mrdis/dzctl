@@ -2,9 +2,9 @@ Trying to implement remote control for deezer (Still just a proof of concept!)
 
 # Get started
 
-1. Open the install.html page and drag the bookmarklet link on the bookmark bar
+1. Open the [install.html](https://mrdis.github.io/dzctl/install.html) page and drag the bookmarklet link on the bookmark bar
 2. Open deezer and click on the bookmarklet. On the bottom left of the page a box will appear with "ID: XXXXXX - PIN: XXXX"
-3. Open the app.html page, insert the ID and PIN and click connect
+3. Open the [app.html](https://mrdis.github.io/dzctl/app.html) page, insert the ID and PIN and click connect
 4. Now you should be able to control things on the deezer page!
 
 # How it works
