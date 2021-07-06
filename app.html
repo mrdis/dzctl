@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Deezer Controller</title>
+
+        <style>
+            body {
+                background: #eee;
+            }
+        
+            h1 {
+                font: normal normal normal 34px arial;
+            }
+            h2 {
+                font: normal normal normal 28px arial;
+            }
+        
+            .container {
+                position:fixed; margin: auto; top: 20px; left:0; right:0; padding: 20px; width: 400px; border: 1px solid #ccc; background: white; border-radius: 5px; color: black;
+            }
+            
+            .big-text {
+                font: normal normal normal 20px arial;
+            }
+            
+
+        </style>
+        <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+        <script src="peerctl-cli.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Deezer Controller</h1>
+            <div>
+                <h2>Connect</h2>
+                Peer ID         
+                <input type="tel" id="peerid"/>
+                <br/>
+                PIN
+                <input type="tel" id="pin"/>
+                <br/>
+                <div>
+                    <a id="connect-link" class="big-text">
+                        Connect
+                    </a>
+                </div>
+            </div>
+            <div>
+                <h2>Status</h2>
+                Playing : <span id="current-artist"></span> - <span id="current-song"></span>
+            </div>
+            <div>
+                <h2>Browse</h2>
+                <input type="text" id="search-text"/>
+                <a href="javascript:searchText()">Search</a>
+                <div id="browser-content">
+                </div>
+            </div>
+            <div>
+                <h2>Controls</h2>
+                <a href="javascript:togglePlay()">Play/Pause</a>
+                <a href="javascript:next()">Next</a>
+                <a href="javascript:toggleMute()">Mute/Unmute</a>
+            </div>
+        </div>
+        
+        
+        <script>
+            var id = localStorage.getItem('dzctl-id');
+            if(id){
+                document.getElementById("peerid").value = id;
+            }
+
+
+            const link = document.getElementById('connect-link')           
+            link.href = `javascript:connect()`
+
+            var cli;
+
+            function connect(){
+                const id  = document.getElementById("peerid").value;
+                const pin = document.getElementById('pin').value
+                cli = new PeerCtlClient()
+                cli.on('status',renderStatus)
+                cli.connect("dzctl",id,pin)
+            }
+
+            function setText(elemId,text){
+                const elem = document.getElementById(elemId)
+                if(elem)
+                    elem.innerText = text
+            }
+            function renderStatus(status){
+                console.log(status)
+
+                if(status.currentSong){
+                    setText("current-artist",status.currentSong.ART_NAME)
+                    setText("current-song",status.currentSong.SNG_TITLE)
+                }else{
+                    setText("current-artist","")
+                    setText("current-song"  ,"")
+                }
+
+                const browser = document.getElementById('browser-content')
+                if(status.currentSearch){
+                    browser.innerHTML=""
+                    if(status.currentSearch.tracks){
+                        const tracksdiv = document.createElement('div')
+                        status.currentSearch.tracks.map(function(track){
+                            const a = document.createElement('a')
+                            a.href="javascript:navigate('"+track.path+"')"
+                            a.innerHTML = track.title
+                            console.log(a)
+                            return a
+                        }).forEach(function(element) {
+                            tracksdiv.append(element)
+                        });
+                        browser.appendChild(tracksdiv)
+                    }
+                }
+            }
+
+            function send(command,params){
+                cli.send(command,params)
+            }
+
+            function sendClickOn(descriptor){
+                send('clickOn',descriptor)
+            }
+
+            function togglePlay(){sendClickOn("togglePlay")}
+            function next      (){sendClickOn("next")}
+            function toggleMute(){sendClickOn("toggleMute")}
+            function searchText() {send("search",document.getElementById("search-text").value)}
+            function navigate(path){send('navigate',path)}
+        </script>
+    </body>
+</html>
