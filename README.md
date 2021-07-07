@@ -13,3 +13,10 @@ The bookmarklet injects the "inject-dzctl.js" script into the deezer webpage.
 This script uses [Peer.js](https://peerjs.com/) to open a "server" endpoint that listen for connections from the "app"
 When you open the app.html page and click connect, you will use the ID to connect to the "server" peer, and pass the PIN as a basic form of authentication.
 From that point, the app will send commands to the server, and the server will sent status updates to the app
+
+# Known issues
+
+This project is in super early development stage, it's barely working!
+
+It's using free PeerJS service, so no TURN server, this means that complicated NAT traversal scenarios are not supported.
+But if deezer webpage and controller webpage are opened by devices in the same network, it should work.
