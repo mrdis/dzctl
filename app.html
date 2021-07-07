@@ -16,7 +16,7 @@
             }
         
             .container {
-                position:fixed; margin: auto; top: 20px; left:0; right:0; padding: 20px; width: 400px; border: 1px solid #ccc; background: white; border-radius: 5px; color: black;
+                margin: auto; top: 20px; left:0; right:0; padding: 20px; width: 400px; border: 1px solid #ccc; background: white; border-radius: 5px; color: black;
             }
             
             .big-text {
@@ -46,15 +46,23 @@
                 </div>
             </div>
             <div>
-                <h2>Status</h2>
-                Playing : <span id="current-artist"></span> - <span id="current-song"></span>
+                <h2>Navigation</h2>
+                <div id="navi-content">
+                </div>
             </div>
             <div>
                 <h2>Browse</h2>
+                <div id="playlists"></div>
+                <div id="tracks"></div>
+                <h3>Search</h3>
                 <input type="text" id="search-text"/>
                 <a href="javascript:searchText()">Search</a>
                 <div id="browser-content">
                 </div>
+            </div>
+            <div>
+                <h2>Status</h2>
+                Playing : <span id="current-artist"></span> - <span id="current-song"></span>
             </div>
             <div>
                 <h2>Controls</h2>
@@ -90,6 +98,49 @@
                 if(elem)
                     elem.innerText = text
             }
+
+            function renderItems(parentid,items,title){
+                if(!items)return
+                const parent = document.getElementById(parentid)
+                parent.innerHTML=""
+                if(title){
+                    const h = document.createElement('h3')
+                    h.innerText = title
+                    parent.append(h)
+                }
+                const ul = document.createElement('ul')
+                items.forEach(function(item){
+                    if(!item)return
+                    const li = document.createElement('li') 
+                    const a = document.createElement('a')
+                    a.href="javascript:navigate('"+item.path+"')"
+                    if(item.html)
+                        a.innerHTML = item.html
+                    else if(item.title)
+                        a.innerText = item.title
+                    else if(item.name)
+                        a.innerText = item.name
+                    li.append(a)
+
+                    if(item.play){
+                        const a = document.createElement('a')
+                        a.href="javascript:play('"+item.play+"')"
+                        a.innerText = "[play]"
+                        li.append(a)
+                    }
+
+                    if(item.scroll){
+                        const a = document.createElement('a')
+                        a.href="javascript:scroll('"+item.scroll+"')"
+                        a.innerText = "[scroll]"
+                        li.append(a)
+                    }
+
+                    ul.append(li)
+                });
+                parent.append(ul)
+            }
+
             function renderStatus(status){
                 console.log(status)
 
@@ -101,38 +152,32 @@
                     setText("current-song"  ,"")
                 }
 
-                const browser = document.getElementById('browser-content')
                 if(status.currentSearch){
-                    browser.innerHTML=""
-                    if(status.currentSearch.tracks){
-                        const tracksdiv = document.createElement('div')
-                        status.currentSearch.tracks.map(function(track){
-                            const a = document.createElement('a')
-                            a.href="javascript:navigate('"+track.path+"')"
-                            a.innerHTML = track.title
-                            console.log(a)
-                            return a
-                        }).forEach(function(element) {
-                            tracksdiv.append(element)
-                        });
-                        browser.appendChild(tracksdiv)
-                    }
+                    renderItems('browser-content',status.currentSearch.tracks)
                 }
+
+                renderItems('navi-content',status.navi)
+                renderItems('playlists',status.playlists,"Playlists")
+                renderItems('tracks',status.tracks,"Tracks")
+
             }
 
+            // Common action utils
             function send(command,params){
                 cli.send(command,params)
             }
-
             function sendClickOn(descriptor){
                 send('clickOn',descriptor)
             }
 
+            // Actions
             function togglePlay(){sendClickOn("togglePlay")}
             function next      (){sendClickOn("next")}
             function toggleMute(){sendClickOn("toggleMute")}
             function searchText() {send("search",document.getElementById("search-text").value)}
             function navigate(path){send('navigate',path)}
+            function play(path){send('play',path)}
+            function scroll(path){send('scroll',path)}
         </script>
     </body>
 </html>
