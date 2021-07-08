@@ -112,8 +112,17 @@
                 items.forEach(function(item){
                     if(!item)return
                     const li = document.createElement('li') 
+
+                    if(item.img){
+                        const img = document.createElement('img')
+                        img.src = item.img
+                        img.width = img.height = 50
+                        li.append(img)
+                    }
+
                     const a = document.createElement('a')
-                    a.href="javascript:navigate('"+item.path+"')"
+                    if(item.path)
+                        a.href="javascript:navigate('"+item.path+"')"
                     if(item.html)
                         a.innerHTML = item.html
                     else if(item.title)

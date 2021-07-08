@@ -118,24 +118,52 @@ var injected_dzctl;
         })        
     }
 
+    function getFlow() {
+        const selFlow = '#page_content > div.page-wrapper > div.page-content > div.channel > section > div > div > div > div > ul > li.thumbnail-col.flow'
+        const flow = document.querySelector(selFlow)
+        if(!flow)return
+        const selImg  = 'figure > div > img'
+        const selBut  = 'figure > ul > li > button'
+        const img = flow.querySelector(selImg)
+        const but = flow.querySelector(selBut)
+        const playid = "flow"
+        but.classList.add(playid)
+        return {
+            "name" : "Flow",
+            play : "button."+playid,
+            img : img.src
+        }
+    }
+
     // Scrape the list of playlists
     function getPlaylists() {
-        const selLi = '#page_profile > div.naboo-catalog-content-wrapper > div > div > section > div > ul > li'          
+        const selLi = '#page_profile > div.naboo-catalog-content-wrapper > div > div > section > div > ul > li'                 
+        const selHome  = '#page_content > div.page-wrapper > div.page-content > div.channel > section > div > div > div > div > ul > li.thumbnail-col'        
+        var items = document.querySelectorAll(selLi)
+        if(items.length == 0)
+            items = document.querySelectorAll(selHome)
         const selPlay = 'figure > ul > li:nth-child(1) > button'
         const selLink = 'div > div.heading-4 > a'
-        const playlists = Array.from(document.querySelectorAll(selLi)).map(function(li){
+        const selImg  = 'figure > div > img'
+        
+        const playlists = Array.from(items).map(function(li){
             const link = li.querySelector(selLink)
             if(!link)return
             const play = li.querySelector(selPlay)
             // Mark button adding a special classname
             const playid = link.pathname.replaceAll("/","_")
-            play.classList.add(playid)
+            if(play)play.classList.add(playid)
+            const img = li.querySelector(selImg)
             return {
                 name : link.innerText,
                 path : link.pathname,
-                play : "button."+playid
+                play : "button."+playid,
+                img  : img ? img.src : "",
             }
         })
+        const flow = getFlow()
+        if(flow)
+            playlists.unshift(flow)
         return playlists
     }
 
@@ -164,11 +192,14 @@ var injected_dzctl;
     function getTracks(){
         const setPlistItems = '#page_naboo_playlist > div.catalog-content > div > div > div > div.datagrid > div > div.datagrid-row.song'
         const selAlbumItems = '#page_naboo_album > div > div > div.datagrid-container > div.datagrid > div.datagrid-row.song'
+        const selLovedItems = '#page_profile > div.naboo-catalog-content-wrapper > div > div > section > div > div > div.datagrid > div > div.datagrid-row.song'
         const selTitle = 'div.datagrid-cell.cell-title > div > a'
         const selPlay  = 'div:nth-child(1) > div > a'
         var items = document.querySelectorAll(setPlistItems)
         if(items.length==0)
             items = document.querySelectorAll(selAlbumItems)
+        if(items.length==0)
+            items = document.querySelectorAll(selLovedItems)
         const tracks = Array.from(items).map(function(item){
             const title = item.querySelector(selTitle)
             const play = item.querySelector(selPlay)
