@@ -30,6 +30,7 @@ PeerCtlClient.prototype.connect = function (prefix,id,pin) {
         });
         _this.conn.on('close', function () {
             console.log("Disconnected")
+            _this.connected = false
             _this._emit("disconnected")
         })
         _this.conn.on('data', function (data) {
