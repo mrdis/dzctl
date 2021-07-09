@@ -92,6 +92,7 @@
                 cli = new PeerCtlClient()
                 cli.on('status',renderStatus)
                 cli.on('connected',function(){
+                    localStorage.setItem('dzctl-id',id);
                     setText('connection-status',"Connected")
                 })
                 cli.on('disconnected',function(){
