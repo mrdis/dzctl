@@ -1,9 +1,12 @@
 function PeerCtlClient() {
     this.handlers = {
-        status: []
+        status: [],
+        connected: [],
+        disconnected: []
     }
     this.peer = undefined
     this.conn = undefined
+    this.connected = false
 }
 PeerCtlClient.prototype._emit = function (event, payload) {
     const handlers = this.handlers[event] || []
@@ -27,8 +30,14 @@ PeerCtlClient.prototype.connect = function (prefix,id,pin) {
         });
         _this.conn.on('close', function () {
             console.log("Disconnected")
+            _this._emit("disconnected")
         })
         _this.conn.on('data', function (data) {
+            if(!_this.connected){
+                console.log("Connected")
+                _this.connected = true
+                _this._emit("connected")
+            }
             if(data.status){
                 _this._emit("status",data.status)
             }

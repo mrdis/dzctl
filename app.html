@@ -44,6 +44,7 @@
                         Connect
                     </a>
                 </div>
+                <span id="connection-status">Disconnected</span>
             </div>
             <div>
                 <h2>Navigation</h2>
@@ -90,6 +91,12 @@
                 const pin = document.getElementById('pin').value
                 cli = new PeerCtlClient()
                 cli.on('status',renderStatus)
+                cli.on('connected',function(){
+                    setText('connection-status',"Connected")
+                })
+                cli.on('disconnected',function(){
+                    setText('connection-status',"Disconnected")
+                })
                 cli.connect("dzctl",id,pin)
             }
 
