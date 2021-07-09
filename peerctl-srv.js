@@ -80,7 +80,7 @@ PeerCtlServer.prototype.update = function (status) {
     this._dispatch({ status })
 }
 
-PeerCtlServer.prototype.disconnect = function () {
-    this.peer.disconnect()
+PeerCtlServer.prototype.destroy = function () {
+    this.peer.destroy()
 }
 

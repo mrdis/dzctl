@@ -292,7 +292,7 @@ var injected_dzctl;
     injected_dzctl = {
         unload: function () {
             document.getElementsByTagName('body')[0].removeChild(div)
-            peerctl.disconnect()
+            peerctl.destroy()
             peerctl = undefined
             clearInterval(statusInterval)
             status = {}
