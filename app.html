@@ -98,6 +98,9 @@
                 cli.on('disconnected',function(){
                     setText('connection-status',"Disconnected")
                 })
+                cli.on('connecting',function(){
+                    setText('connection-status',"Connecting")
+                })
                 cli.connect("dzctl",id,pin)
             }
 
