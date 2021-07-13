@@ -93,6 +93,11 @@ var injected_dzctl;
                 }
                 item.scrollIntoView()
             },
+
+            // Go back in history
+            back : function(){
+                history.back()
+            }
         }
 
         if (handlers[command])
@@ -136,28 +141,33 @@ var injected_dzctl;
     }
 
     // Scrape the list of playlists
-    function getPlaylists() {
-        const selLi = '#page_profile > div.naboo-catalog-content-wrapper > div > div > section > div > ul > li'                 
-        const selHome  = '#page_content > div.page-wrapper > div.page-content > div.channel > section > div > div > div > div > ul > li.thumbnail-col'        
-        var items = document.querySelectorAll(selLi)
-        if(items.length == 0)
-            items = document.querySelectorAll(selHome)
+    function getPlaylists(root) {
+        if(!root)root = document
+  
+        const selLi = 'li.thumbnail-col'
+        const items = root.querySelectorAll(selLi)
+
         const selPlay = 'figure > ul > li:nth-child(1) > button'
         const selLink = 'div > div.heading-4 > a'
+        const selLink2 = 'a'
         const selImg  = 'figure > div > img'
-        
-        const playlists = Array.from(items).map(function(li){
-            const link = li.querySelector(selLink)
-            if(!link)return
+        const selTitle = 'figure > div > p.title-text'
+        const playlists = Array.from(items).map(function(li,index){
+            const link = li.querySelector(selLink) || li.querySelector(selLink2)
             const play = li.querySelector(selPlay)
+            const title = li.querySelector(selTitle)
+            if(!link && !title)return
             // Mark button adding a special classname
-            const playid = link.pathname.replaceAll("/","_")
-            if(play)play.classList.add(playid)
+            var playid
+            if(play){
+                playid = link ? link.pathname.replaceAll("/","_") : 'playid_'+index 
+                play.classList.add(playid)
+            }
             const img = li.querySelector(selImg)
             return {
-                name : link.innerText,
-                path : link.pathname,
-                play : "button."+playid,
+                name : title ? title.innerText : link.innerText,
+                path : link ? link.pathname : '',
+                play : play ? "button."+playid : '',
                 img  : img ? img.src : "",
             }
         })
@@ -190,16 +200,10 @@ var injected_dzctl;
 
     // Scrape visible tracks
     function getTracks(){
-        const setPlistItems = '#page_naboo_playlist > div.catalog-content > div > div > div > div.datagrid > div > div.datagrid-row.song'
-        const selAlbumItems = '#page_naboo_album > div > div > div.datagrid-container > div.datagrid > div.datagrid-row.song'
-        const selLovedItems = '#page_profile > div.naboo-catalog-content-wrapper > div > div > section > div > div > div.datagrid > div > div.datagrid-row.song'
+        const selRowSong = 'div.datagrid-row.song'
+        const items = document.querySelectorAll(selRowSong)            
         const selTitle = 'div.datagrid-cell.cell-title > div > a'
         const selPlay  = 'div:nth-child(1) > div > a'
-        var items = document.querySelectorAll(setPlistItems)
-        if(items.length==0)
-            items = document.querySelectorAll(selAlbumItems)
-        if(items.length==0)
-            items = document.querySelectorAll(selLovedItems)
         const tracks = Array.from(items).map(function(item){
             const title = item.querySelector(selTitle)
             const play = item.querySelector(selPlay)
@@ -214,6 +218,30 @@ var injected_dzctl;
             }
         })
         return tracks
+    }
+
+    function getSections() {
+        const selSections = 'section.user-section'
+        const selChannels = 'section.channel-section'
+        const items = document.querySelectorAll(selSections+' , '+selChannels)
+        const selTitle = 'h2'
+        const selLink = 'h2 > a'
+        const selSubTitle = 'aside div.heading-3'
+        const selDesc = 'aside div.heading-4'
+        const sections = Array.from(items).map(function(item){
+            const title = item.querySelector(selTitle)
+            const link =  item.querySelector(selLink)
+            const subTitle = item.querySelector(selSubTitle)
+            const desc = item.querySelector(selDesc)
+            return {
+                title : title?title.innerText:'',
+                path : link?link.pathname : '',
+                subtitle : subTitle?subTitle.innerText:'',
+                desc : desc?desc.innerText:'',
+                playlists : getPlaylists(item)
+            }
+        })
+        return sections
     }
 
     // Scrape current search results
@@ -239,22 +267,24 @@ var injected_dzctl;
         const trackList = tojo(dzPlayer.getTrackList());
         const currentSearch = getCurrentSearch();
         const navi = getMainNavi();
-        const playlists = getPlaylists();
         const tracks = getTracks()
+        const sections = getSections()
         return {
             navi,
             currentSong,
             trackList,
             currentSearch,
-            playlists,
-            tracks
+            tracks,
+            sections
         }
     }
 
     // Recalc status and dispatch it if changed
     function checkStatus() {
-        var newStatus = getStatus();
-        if (JSON.stringify(newStatus) != JSON.stringify(status)) {
+        var newStatus = JSON.stringify(getStatus());
+        // Remove unicode chars that are not handled well by BinaryPack, used by PeerJs...
+        newStatus = newStatus.replaceAll(/[\u0100-\uFFFF]+/g,"")
+        if (newStatus != status) {
             console.log("Status changed")
             status = newStatus
             peerctl.update(status)

@@ -48,12 +48,15 @@
             </div>
             <div>
                 <h2>Navigation</h2>
+                <a href="javascript:back()">Back</a>
                 <div id="navi-content">
                 </div>
             </div>
             <div>
                 <h2>Browse</h2>
+                <div id="sections"></div>
                 <div id="playlists"></div>
+                <div id="genres"></div>
                 <div id="tracks"></div>
                 <h3>Search</h3>
                 <input type="text" id="search-text"/>
@@ -110,9 +113,10 @@
                     elem.innerText = text
             }
 
-            function renderItems(parentid,items,title){
+            function renderItems(parent,items,title){
                 if(!items)return
-                const parent = document.getElementById(parentid)
+                if(typeof parent === 'string')
+                    parent = document.getElementById(parent)
                 parent.innerHTML=""
                 if(title){
                     const h = document.createElement('h3')
@@ -161,7 +165,87 @@
                 parent.append(ul)
             }
 
+
+            function renderSections(parentid,sections){
+                if(!sections)return
+                const parent = document.getElementById(parentid)
+                parent.innerHTML=""
+                const ul = document.createElement('ul')
+
+                sections.forEach(function(section){
+                    const h = document.createElement('h3')
+                    if(section.path){
+                        const a = document.createElement('a')
+                        a.innerText = section.title
+                        a.href = 'javascript:navigate("'+section.path+'")'
+                        h.appendChild(a)
+                    }else{
+                        h.innerText = section.title
+                    }                    
+                    ul.append(h)
+                    if(section.subtitle){
+                        const h4 = document.createElement('h4')
+                        h4.innerText = section.subtitle
+                        ul.append(h4)
+                    }
+                    if(section.desc){
+                        const h5 = document.createElement('h5')
+                        h5.innerText = section.desc
+                        ul.append(h5)
+                    }
+                    if(section.playlists){
+                        const div = document.createElement('div')
+                        renderItems(div,section.playlists)
+                        ul.append(div)
+                    }
+                })
+
+                parent.append(ul)
+
+/*                
+                items.forEach(function(item){
+                    if(!item)return
+                    const li = document.createElement('li') 
+
+                    if(item.img){
+                        const img = document.createElement('img')
+                        img.src = item.img
+                        img.width = img.height = 50
+                        li.append(img)
+                    }
+
+                    const a = document.createElement('a')
+                    if(item.path)
+                        a.href="javascript:navigate('"+item.path+"')"
+                    if(item.html)
+                        a.innerHTML = item.html
+                    else if(item.title)
+                        a.innerText = item.title
+                    else if(item.name)
+                        a.innerText = item.name
+                    li.append(a)
+
+                    if(item.play){
+                        const a = document.createElement('a')
+                        a.href="javascript:play('"+item.play+"')"
+                        a.innerText = "[play]"
+                        li.append(a)
+                    }
+
+                    if(item.scroll){
+                        const a = document.createElement('a')
+                        a.href="javascript:scroll('"+item.scroll+"')"
+                        a.innerText = "[scroll]"
+                        li.append(a)
+                    }
+
+                    ul.append(li)
+                });
+                parent.append(ul)*/
+            }
+
             function renderStatus(status){
+                status = JSON.parse(status)
                 console.log(status)
 
                 if(status.currentSong){
@@ -176,9 +260,12 @@
                     renderItems('browser-content',status.currentSearch.tracks)
                 }
 
+                renderSections('sections',status.sections)
+
                 renderItems('navi-content',status.navi)
                 renderItems('playlists',status.playlists,"Playlists")
                 renderItems('tracks',status.tracks,"Tracks")
+                renderItems('genres',status.genres,"Genres")
 
             }
 
@@ -195,6 +282,7 @@
             function next      (){sendClickOn("next")}
             function toggleMute(){sendClickOn("toggleMute")}
             function searchText() {send("search",document.getElementById("search-text").value)}
+            function back(){send('back')}
             function navigate(path){send('navigate',path)}
             function play(path){send('play',path)}
             function scroll(path){send('scroll',path)}
