@@ -82,6 +82,11 @@
             if(id){
                 document.getElementById("peerid").value = id;
             }
+            var pin = sessionStorage.getItem('dzctl-pin')
+            if(pin){
+                document.getElementById("pin").value = pin;
+                connect()
+            }
 
 
             const link = document.getElementById('connect-link')           
@@ -96,6 +101,7 @@
                 cli.on('status',renderStatus)
                 cli.on('connected',function(){
                     localStorage.setItem('dzctl-id',id);
+                    sessionStorage.setItem('dzctl-pin',pin)
                     setText('connection-status',"Connected")
                 })
                 cli.on('disconnected',function(){
