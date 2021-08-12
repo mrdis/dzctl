@@ -160,7 +160,7 @@ var injected_dzctl;
             // Mark button adding a special classname
             var playid
             if(play){
-                playid = link ? link.pathname.replaceAll("/","_") : 'playid_'+index 
+                playid = link ? link.pathname.replace(/\//g,"_") : 'playid_'+index 
                 play.classList.add(playid)
             }
             const img = li.querySelector(selImg)
@@ -209,7 +209,7 @@ var injected_dzctl;
             const play = item.querySelector(selPlay)
             if(!title)return
             // Mark button adding a special classname
-            const playid = title.pathname.replaceAll("/","_")
+            const playid = title.pathname.replace(/\//g,"_")
             play.classList.add(playid)
             return {
                 name : title.firstChild.innerText,
@@ -283,7 +283,7 @@ var injected_dzctl;
     function checkStatus() {
         var newStatus = JSON.stringify(getStatus());
         // Remove unicode chars that are not handled well by BinaryPack, used by PeerJs...
-        newStatus = newStatus.replaceAll(/[\u0100-\uFFFF]+/g,"")
+        newStatus = newStatus.replace(/[\u0100-\uFFFF]+/g,"")
         if (newStatus != status) {
             console.log("Status changed")
             status = newStatus
