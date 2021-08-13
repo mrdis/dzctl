@@ -58,7 +58,14 @@ var injected_dzctl;
 
                 // Trigger search
                 const form = document.querySelector('#page_topbar > div.topbar-search > div > form')
-                form.requestSubmit()
+                if(form.requestSubmit){
+                    form.requestSubmit()
+                }else{
+                    const button = document.querySelector('#page_topbar > div.topbar-search > div > form > button.topbar-search-submit')
+                    if(button)button.click()
+                }
+
+                
 
                 // Update status
                 checkStatus()
